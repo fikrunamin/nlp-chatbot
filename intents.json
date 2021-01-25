@@ -3,7 +3,9 @@
         {
             "tag" : "1",
             "patterns":[
-                "What is a coronavirus?"
+                "What is a coronavirus?",
+                "What is covid-19?",
+                "What is covid?"
             ],
             "responses":[
                 "Coronaviruses are a large family of viruses which may cause illness in animals or humans.",

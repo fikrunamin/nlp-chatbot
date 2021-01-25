@@ -14,9 +14,11 @@ from nltk.corpus import stopwords
 
 app = Flask(__name__)
 
+
 @app.route('/')
 def index():
-    return render_template('index.html', name="")
+    return render_template('app.html', name="")
+
 
 @app.route('/train')
 def train_data():
@@ -40,13 +42,13 @@ def train_data():
         for pattern in intent['patterns']:
             w = nltk.word_tokenize(pattern)
             w = [word.replace("\\", "").replace("\"", "").replace(
-                "\'", "").replace("?", "").replace("-19", "").strip() for word in w if word.isalnum()]
+                "\'", "").replace("?", "").replace("COVID-19", "").strip().lower() for word in w if word.isalnum()]
             w = [lemmatizer.lemmatize(
                 word.lower()) for word in w]
             filtered_words = []
             for wrd in w:
-                # if wrd not in stopWords:
-                filtered_words.append(wrd)
+                if wrd not in stopWords:
+                    filtered_words.append(wrd)
             w = filtered_words
             bw = nltk.bigrams(w)
             bw = map(lambda x: ' '.join(x), list(bw))
@@ -113,6 +115,7 @@ def train_data():
     print("model created")
     return "Model created"
 
+
 @app.route('/get_response', methods=['GET', 'POST'])
 def create_response():
     lemmatizer = WordNetLemmatizer()
@@ -162,7 +165,7 @@ def create_response():
         for bag in bags:
             res = model.predict(np.array([bag]))[0]
             ERROR_THRESHOLD = 0.25
-            PROBABILITY_THRESHOLD = 0.7
+            PROBABILITY_THRESHOLD = 0
             result = [[i, r] for i, r in enumerate(res) if r > ERROR_THRESHOLD]
             result.sort(key=lambda x: x[1], reverse=True)
             results.append(result)
@@ -173,7 +176,7 @@ def create_response():
             for r in result:
                 if (r[1] > PROBABILITY_THRESHOLD):
                     return_list.append(
-                    {"intent": classes[r[0]], "probability": str(r[1])})
+                        {"intent": classes[r[0]], "probability": str(r[1])})
         print("return list", return_list)
         return return_list
 
@@ -195,15 +198,15 @@ def create_response():
 
     print("You can start interact with the chatbot now.")
 
-    while True:
-        user_input = input('')
-        user_input = user_input.lower().strip()
+    # while True:
+    user_input = request.form['keyword']
+    user_input = user_input.lower().strip()
 
-        if(user_input != ""):
-            print("You: ============================================================================>>>", user_input)
-            response = chatbot_response(user_input)
-            print(
-                "Bot: ============================================================================>>>", response)
+    if(user_input != ""):
+        print("You: ============================================================================>>>", user_input)
+        response = chatbot_response(user_input)
+        print(
+            "Bot: ============================================================================>>>", response)
 
     return response
 
